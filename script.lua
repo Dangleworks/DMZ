@@ -3,6 +3,8 @@ dmz_zones = {}
 dmz_radius = 1000
 popups = {}
 
+vehicles = {}
+
 function onCreate(world_create)
 	dmz_uiid = server.getMapID()
 	dmz_zones = server.getZones("dmz")
@@ -12,13 +14,25 @@ function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
 	addDMZZones(peer_id)
 end
 
+function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost) 
+	if peer_id ~= -1 then
+		vehicles[vehicle_id] = peer_id
+	end
+end
+
+function onVehicleDespawn(vehicle_id)
+	if vehicles[vehicle_id] ~= nil then
+		vehicles[vehicle_id] = nil
+	end
+end
+
 function addDMZZones(peer_id)
 	for _, zone in pairs(dmz_zones) do
 		local x,y,z = matrix.position(zone.transform)
 		server.addMapObject(peer_id, dmz_uiid, 0, 8, x, z, 0, 0, 0, 0, "DMZ  - No PvP", dmz_radius, "No PvP in this zone", 0, 255, 0, 255)
 	end
 end
-	
+
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command, args)
 	if  command == "?dmztest" and is_admin then
 		server.announce("[DEBUG]", "Reloaded map markers")
@@ -52,6 +66,21 @@ function onTick(ticks)
 		elseif in_zone == false and popups[p.id] == true  then
 			popups[p.id] = false
 			server.removePopup(p.id, dmz_uiid)
+		end
+	end
+
+	for vid, pid in pairs(vehicles) do
+		local in_zone = false
+		local pos, ok = server.getVehiclePos(vehicle_id)
+		for _, z in ipairs(dmz_zones) do
+			if ok and matrix.distance(pos, z.transform) < dmz_radius then
+				in_zone = true
+			end
+		end
+
+		local vd, ok = server.getVehicleData()
+		if ok and in_zone == true and vd.invulnerable == false then
+			server.setVehicleInvulnerable(vid, true)
 		end
 	end
 end
