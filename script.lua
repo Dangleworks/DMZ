@@ -78,7 +78,7 @@ function onTick(ticks)
 			end
 		end
 
-		local vd, ok = server.getVehicleData()
+		local vd, ok = server.getVehicleData(vid)
 		if ok and in_zone == true and vd.invulnerable == false then
 			server.setVehicleInvulnerable(vid, true)
 		end
