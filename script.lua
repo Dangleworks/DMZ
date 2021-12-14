@@ -71,7 +71,7 @@ function onTick(ticks)
 
 	for vid, pid in pairs(vehicles) do
 		local in_zone = false
-		local pos, ok = server.getVehiclePos(vehicle_id)
+		local pos, ok = server.getVehiclePos(vid)
 		for _, z in ipairs(dmz_zones) do
 			if ok and matrix.distance(pos, z.transform) < dmz_radius then
 				in_zone = true
